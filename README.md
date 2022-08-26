@@ -24,11 +24,12 @@ In my linked code I'm only implemented a simple unit that operates on the state
 of the graph, but it would be straight-forward to implement computational units 
 with inputs and outputs with channels. Now the following code which would 
 otherwise deadlock, won't compile.
+    
+**this doesn't compile**
 ```rust
 let state_copy = state.clone()
 let parallel = StateManipulation::new(state.clone(), move |(input_vec, _)| {
     if let Some(i) = input_vec.pop() {
-        this doesn't compile
         let (_, return_vec): &mut (Vec<_>, Vec<_>) = &mut state_copy.lock().unwrap();
         return_vec.push(i as u64);
         false
@@ -38,10 +39,10 @@ let parallel = StateManipulation::new(state.clone(), move |(input_vec, _)| {
 });
 ```
 
+**this does**
 ```rust
 let parallel = StateManipulation::new(state.clone(), move |(input_vec, return_vec)| {
     if let Some(i) = input_vec.pop() {
-        this doesn't compile
         return_vec.push(i as u64);
         false
     } else {
