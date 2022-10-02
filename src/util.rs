@@ -32,7 +32,7 @@ pub(crate) trait SafeRefComputation<I: SafeType, O: SafeType> =
 pub(crate) trait SafeMutRefComputation<I: SafeType, O: SafeType> =
     Fn(&mut I) -> O + Send + Sync + LockFree + 'static;
 
-pub(crate) trait SafeType = Send + Sync + LockFree + Sized;
+pub(crate) trait SafeType = Send + Sync + LockFree + Sized + Clone + 'static;
 
 pub(crate) type SharedMutex<T> = Arc<Mutex<T>>;
 

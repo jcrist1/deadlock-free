@@ -1,7 +1,6 @@
 #![feature(auto_traits)]
 #![feature(negative_impls)]
 #![feature(trait_alias)]
-#![feature(generic_associated_types)]
 
 use std::thread::{self, JoinHandle};
 

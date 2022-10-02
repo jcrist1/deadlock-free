@@ -5,9 +5,9 @@ use frunk::{hlist::HList, HCons, HNil};
 use crate::util::{SafeType, SharedMutex};
 trait HierarchicalState {}
 
-struct True;
-struct False;
-trait TypeBool {
+pub struct True;
+pub struct False;
+pub trait TypeBool {
     type Or<T: TypeBool>: TypeBool;
     type And<T: TypeBool>: TypeBool;
     fn bool() -> bool;
@@ -27,18 +27,18 @@ impl TypeBool for False {
     }
 }
 
-fn or<T: TypeBool, Unused>() -> True {
+fn or<T: TypeBool>(_t: T) -> True {
     True
 }
 
 trait InductiveStateSubset {}
 
-trait Counter: HList {}
+pub trait Counter: HList {}
 
 impl Counter for HNil {}
 impl<Tail: Counter> Counter for HCons<(), Tail> {}
 
-trait Countable: HList {
+pub trait Countable: HList {
     type Count: Counter;
 }
 
@@ -50,11 +50,11 @@ impl<Head, Tail: Countable> Countable for HCons<Head, Tail> {
     type Count = HCons<(), <Tail as Countable>::Count>;
 }
 
-trait SharedState: Countable {
+pub trait SharedState: Countable {
     fn clone(&self) -> Self;
 }
 
-trait Filter: Countable {}
+pub trait Filter: Countable {}
 
 impl Filter for HNil {}
 
@@ -138,12 +138,6 @@ impl<S: SafeType + 'static, TailFilter: Filter, TailState: Lock<TailFilter>>
     }
 }
 
-struct StateSubset<State: SharedState<Count = Size>, FilterType: Filter<Count = Size>> {
-    state: State,
-    _size: PhantomData<Size>,
-    _filter: PhantomData<FilterType>,
-}
-
 #[cfg(test)]
 mod tests {
     use frunk::{hlist, hlist_pat, HList};
@@ -151,15 +145,18 @@ mod tests {
     use super::*;
     use crate::util::new_shared;
 
-    #[test]
-    fn test() {
+    // need to uncomment #[test]
+    fn test_build() {
         let state_1 = new_shared(1u32);
         let state_2 = new_shared(Some(String::from("boop")));
         let state_3 = new_shared(0.32);
         let state = hlist!(state_1, state_2, state_3);
-        let hlist_pat![guard_1, guard_2, guard_3] = Lock::<HList![True, True, True]>::lock(&state);
-        let hlist_pat![guard_1, guard_2] = Lock::<HList![True, True, False]>::lock(&state);
-        let hlist_pat![guard_1, guard_2, guard_3] = Lock::<
+        println!("Starting first lock");
+        let hlist_pat![_guard_1, _guard_2, _guard_3] =
+            Lock::<HList![True, True, True]>::lock(&state);
+        println!("Starting second lock");
+        let hlist_pat![_guard_1, _guard_2] = Lock::<HList![True, True, False]>::lock(&state);
+        let hlist_pat![_guard_1, _guard_2, _guard_3] = Lock::<
             <HList![True, True, False] as BoolAlg<HList![False, True, True]>>::Or,
         >::lock(&state);
         // this doesn't compile
