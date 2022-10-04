@@ -4,6 +4,7 @@
 
 use std::thread::{self, JoinHandle};
 
+mod async_node;
 mod graph;
 mod hierarchical_state;
 mod util;
